@@ -1,137 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Weather App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Dashboard</title>
   <style>
+    :root {
+      --bg: #e8f1ff;
+      --panel: #f8fbff;
+      --panel-dark: #dbe6f7;
+      --primary: #4a8ef7;
+      --primary-dark: #2862c7;
+      --text: #1d2f53;
+      --muted: #7a8cb6;
+      --card: rgba(255, 255, 255, 0.8);
+      --shadow: 0 20px 60px rgba(46, 80, 132, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
-      color: #333;
-    }
-
-    .container {
-      background: #fff;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #9bc7ff 0%, #dbefff 35%, #f2f7ff 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 20px;
-      border-radius: 12px;
-      width: 300px;
-      text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
 
-    h1 {
-      margin-bottom: 15px;
+    .dashboard {
+      width: min(1180px, 100%);
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 320px 1fr;
     }
 
-    input {
-      padding: 10px;
-      width: 70%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      outline: none;
+    .sidebar,
+    .main {
+      background: var(--panel);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
-    button {
-      padding: 10px;
+    .sidebar {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(255, 221, 110, 0.24), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(114, 195, 255, 0.2), transparent 20%);
+      pointer-events: none;
+    }
+
+    .sidebar>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .top-row h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .top-row small {
+      color: var(--muted);
+    }
+
+    .location-card {
+      padding: 22px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 16px 40px rgba(50, 80, 142, 0.08);
+    }
+
+    .location-card .city {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .location-card h2 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .location-card span {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .temp-value {
+      font-size: 5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin: 18px 0 6px;
+    }
+
+    .condition {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(74, 142, 247, 0.12);
+      color: var(--primary-dark);
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .weather-stats {
+      display: grid;
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .weather-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    }
+
+    .weather-stat strong {
+      display: block;
+      font-size: 1.1rem;
+    }
+
+    .weather-stat small {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .search-box {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .search-box input,
+    .search-box button {
+      width: 100%;
       border: none;
-      border-radius: 6px;
-      background: #4facfe;
+      outline: none;
+      border-radius: 20px;
+      font-size: 1rem;
+    }
+
+    .search-box input {
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: inset 0 0 0 1px rgba(102, 135, 216, 0.12);
+    }
+
+    .search-box button {
+      padding: 16px 18px;
+      background: var(--primary);
       color: white;
       cursor: pointer;
-      margin-left: 5px;
+      transition: background 0.2s ease;
     }
 
-    button:hover {
-      background: #007bff;
-    }
-
-    .weather {
-      margin-top: 20px;
-    }
-
-    .temp {
-      font-size: 32px;
-      font-weight: bold;
-    }
-
-    .desc {
-      text-transform: capitalize;
-      margin: 5px 0;
-    }
-
-    .details {
-      font-size: 14px;
-      margin-top: 10px;
+    .search-box button:hover {
+      background: var(--primary-dark);
     }
 
     .error {
-      color: red;
-      margin-top: 10px;
+      color: #c34444;
+      font-weight: 600;
+      margin-top: 4px;
+      min-height: 20px;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .main-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .main-header small {
+      color: var(--muted);
+    }
+
+    .hours {
+      background: var(--card);
+      border-radius: 28px;
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .hour-row {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .hour-card {
+      padding: 14px;
+      border-radius: 18px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--text);
+    }
+
+    .hour-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(74, 142, 247, 0.18);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #4a8ef7, #8fc4ff);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .detail-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .detail-card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .detail-card p {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .detail-card small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .hour-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hour-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
   </style>
 </head>
+
 <body>
+  <div class="dashboard">
+    <section class="sidebar">
+      <div class="search-box">
+        <input id="cityInput" type="text" placeholder="Search city, e.g. New York" />
+        <button onclick="getWeather()">Search</button>
+        <div class="error" id="error"></div>
+      </div>
 
-  <div class="container">
-    <h1>Weather App</h1>
-    <input type="text" id="cityInput" placeholder="Enter city" />
-    <button onclick="getWeather()">Search</button>
+      <div class="location-card" id="locationCard">
+        <div class="city">
+          <div>
+            <h2 id="cityName">New York, USA</h2>
+            <span id="dateTime">Today 28 Sept · 07:19</span>
+          </div>
+          <span>☀️</span>
+        </div>
 
-    <div class="weather" id="weather"></div>
-    <div class="error" id="error"></div>
+        <div class="temp-value" id="temperature">27°</div>
+        <div class="condition" id="weatherDescription">Sunny</div>
+
+        <div class="weather-stats">
+          <div class="weather-stat">
+            <div>
+              <strong id="humidityValue">82%</strong>
+              <small>Humidity</small>
+            </div>
+            <span>💧</span>
+          </div>
+          <div class="weather-stat">
+            <div>
+              <strong id="windValue">8 km/h</strong>
+              <small>Wind</small>
+            </div>
+            <span>🌬️</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main">
+      <div class="main-header">
+        <div>
+          <h2>Welcome back Isabella!</h2>
+          <small>Check out today’s weather information</small>
+        </div>
+        <div>
+          <button onclick="loadMock('New York')"
+            style="padding: 10px 18px; border-radius: 999px; border:none; background: #fff; color: var(--primary); cursor: pointer; box-shadow: 0 8px 20px rgba(74,142,247,0.14);">Use
+            mock data</button>
+        </div>
+      </div>
+
+      <div class="hours">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <strong>Upcoming hours</strong>
+          <select id="rainSelect"
+            style="border:none; outline:none; border-radius:999px; padding:10px 14px; background: rgba(255,255,255,0.8); color: var(--text);">
+            <option>Rain precipitation</option>
+            <option>Temperature</option>
+          </select>
+        </div>
+
+        <div class="hour-row" id="hourlyRow"></div>
+      </div>
+
+      <div class="card-grid">
+        <div class="detail-card">
+          <h3>Humidity</h3>
+          <p id="cardHumidity">82% bad</p>
+          <small>good · normal · bad</small>
+        </div>
+        <div class="detail-card">
+          <h3>Wind</h3>
+          <p id="cardWind">8 km/h</p>
+          <small>Light breeze</small>
+        </div>
+        <div class="detail-card">
+          <h3>Precipitation</h3>
+          <p id="cardPrecipitation">1.4 cm</p>
+          <small>Hourly forecast</small>
+        </div>
+        <div class="detail-card">
+          <h3>Feels like</h3>
+          <p id="cardFeelsLike">30°</p>
+          <small>Feels warmer now</small>
+        </div>
+        <div class="detail-card">
+          <h3>UV index</h3>
+          <p id="cardUV">4 medium</p>
+          <small>Moderate sunlight</small>
+        </div>
+        <div class="detail-card">
+          <h3>Chance of rain</h3>
+          <p id="cardRainChance">42%</p>
+          <small>Risk for showers</small>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
-    const apiKey = "YOUR_API_KEY_HERE"; // <-- Replace this
+    const mockWeatherData = {
+      "new york": {
+        city: "New York, USA",
+        dateTime: "Today 28 Sept · 07:19",
+        temp: 27,
+        condition: "Sunny",
+        humidity: 82,
+        wind: 8,
+        precipitation: "1.4 cm",
+        feelsLike: 30,
+        uvIndex: "4 medium",
+        rainChance: 42,
+        hourly: [
+          { time: "Now", temp: 27, level: 73 },
+          { time: "11:00", temp: 28, level: 79 },
+          { time: "12:00", temp: 28, level: 58 },
+          { time: "13:00", temp: 29, level: 75 },
+          { time: "14:00", temp: 30, level: 33 },
+          { time: "15:00", temp: 29, level: 20 }
+        ]
+      },
+      "london": {
+        city: "London, UK",
+        dateTime: "Today 28 Sept · 10:42",
+        temp: 19,
+        condition: "Cloudy",
+        humidity: 68,
+        wind: 10,
+        precipitation: "0.8 cm",
+        feelsLike: 18,
+        uvIndex: "3 low",
+        rainChance: 55,
+        hourly: [
+          { time: "Now", temp: 19, level: 65 },
+          { time: "11:00", temp: 20, level: 68 },
+          { time: "12:00", temp: 20, level: 58 },
+          { time: "13:00", temp: 21, level: 70 },
+          { time: "14:00", temp: 21, level: 60 },
+          { time: "15:00", temp: 20, level: 50 }
+        ]
+      },
+      "tokyo": {
+        city: "Tokyo, Japan",
+        dateTime: "Today 28 Sept · 16:12",
+        temp: 24,
+        condition: "Partly cloudy",
+        humidity: 74,
+        wind: 12,
+        precipitation: "2.0 cm",
+        feelsLike: 26,
+        uvIndex: "5 medium",
+        rainChance: 48,
+        hourly: [
+          { time: "Now", temp: 24, level: 58 },
+          { time: "11:00", temp: 25, level: 60 },
+          { time: "12:00", temp: 26, level: 55 },
+          { time: "13:00", temp: 27, level: 72 },
+          { time: "14:00", temp: 28, level: 80 },
+          { time: "15:00", temp: 27, level: 62 }
+        ]
+      }
+    };
 
-    async function getWeather() {
-      const city = document.getElementById("cityInput").value;
-      const weatherDiv = document.getElementById("weather");
+    const defaultCity = "new york";
+
+    function renderWeather(data) {
+      document.getElementById("cityName").textContent = data.city;
+      document.getElementById("dateTime").textContent = data.dateTime;
+      document.getElementById("temperature").textContent = `${data.temp}°`;
+      document.getElementById("weatherDescription").textContent = data.condition;
+      document.getElementById("humidityValue").textContent = `${data.humidity}%`;
+      document.getElementById("windValue").textContent = `${data.wind} km/h`;
+      document.getElementById("cardHumidity").textContent = `${data.humidity}% bad`;
+      document.getElementById("cardWind").textContent = `${data.wind} km/h`;
+      document.getElementById("cardPrecipitation").textContent = data.precipitation;
+      document.getElementById("cardFeelsLike").textContent = `${data.feelsLike}°`;
+      document.getElementById("cardUV").textContent = data.uvIndex;
+      document.getElementById("cardRainChance").textContent = `${data.rainChance}%`;
+
+      const hourlyRow = document.getElementById("hourlyRow");
+      hourlyRow.innerHTML = data.hourly.map(item => {
+        const width = Math.max(16, item.level);
+        return `
+          <div class="hour-card">
+            <strong>${item.time}</strong>
+            <span>${item.temp}°</span>
+            <div class="bar"><span style="width:${width}%"></span></div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function showError(message) {
+      document.getElementById("error").textContent = message;
+    }
+
+    function loadMock(cityName) {
+      document.getElementById("cityInput").value = cityName;
+      getWeather();
+    }
+
+    function getWeather() {
+      const cityInput = document.getElementById("cityInput").value.trim();
       const errorDiv = document.getElementById("error");
+      const key = cityInput.toLowerCase();
+      const weatherData = mockWeatherData[key];
 
-      weatherDiv.innerHTML = "";
-      errorDiv.textContent = "";
-
-      if (!city) {
-        errorDiv.textContent = "Please enter a city name.";
+      if (!cityInput) {
+        showError("Please enter a city name or use mock data.");
         return;
       }
 
-      try {
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
-        );
-
-        if (!response.ok) {
-          throw new Error("City not found");
-        }
-
-        const data = await response.json();
-
-        const temp = data.main.temp;
-        const desc = data.weather[0].description;
-        const humidity = data.main.humidity;
-        const wind = data.wind.speed;
-
-        weatherDiv.innerHTML = `
-          <div class="temp">${temp}°C</div>
-          <div class="desc">${desc}</div>
-          <div class="details">
-            Humidity: ${humidity}%<br/>
-            Wind: ${wind} m/s
-          </div>
-        `;
-      } catch (error) {
-        errorDiv.textContent = error.message;
+      if (weatherData) {
+        showError("");
+        renderWeather(weatherData);
+        return;
       }
-    }
-  </script>
 
+      showError("City not found. Showing mock weather for New York.");
+      renderWeather(mockWeatherData[defaultCity]);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderWeather(mockWeatherData[defaultCity]);
+    });
+  </script>
 </body>
+
 </html>
